@@ -771,5 +771,3 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     main(tournament_slug=args.tournament_slug)
-
-# Made with Bob

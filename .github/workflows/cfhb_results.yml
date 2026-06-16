@@ -62,5 +62,3 @@ jobs:
             git push
             echo "✅ Changes committed and pushed successfully"
           fi
-
-# Made with Bob
