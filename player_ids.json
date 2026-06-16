@@ -1,0 +1,19 @@
+{
+  "players": [
+    {
+      "id": "bb69e8b5",
+      "name": "FroggyAirplane",
+      "display_name": "Jordan"
+    },
+    {
+      "id": "1d22545e",
+      "name": "Co-op",
+      "display_name": "Lance"
+    },
+    {
+      "id": "0e524932",
+      "name": "PoyoPower",
+      "display_name": "Jeremy"
+    }
+  ]
+}

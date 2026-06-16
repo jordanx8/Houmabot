@@ -1,0 +1,68 @@
+name: CFHB Tournament Results
+
+on:
+  schedule:
+    # Run every day at 8:00 AM CST (14:00 UTC, accounting for CST = UTC-6)
+    - cron: '0 13 * * *'
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions tab
+    inputs:
+      tournament_slug:
+        description: 'Optional: Specific tournament slug to process (without "tournament/" prefix, e.g., "example-2024")'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  update-results:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Run CFHB Results Script
+        env:
+          STARTGG_API_TOKEN: ${{ secrets.STARTGG_API_TOKEN }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+        run: |
+          cd cfhb_results
+          if [ -n "${{ inputs.tournament_slug }}" ]; then
+            echo "🎯 Processing specific tournament: ${{ inputs.tournament_slug }}"
+            python cfhb_results.py --tournament-slug "${{ inputs.tournament_slug }}"
+          else
+            echo "🔍 Processing all recent tournaments"
+            python cfhb_results.py
+          fi
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          if git diff --quiet cfhb_results/posted_results.txt; then
+            echo "✅ No changes detected in cfhb_results/posted_results.txt"
+            echo "✅ No new tournaments to process. All results are up to date."
+          else
+            echo "📝 Changes detected in cfhb_results/posted_results.txt"
+            git add cfhb_results/posted_results.txt
+            git commit -m "Update tournament results - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+            git push
+            echo "✅ Changes committed and pushed successfully"
+          fi
+
+# Made with Bob
