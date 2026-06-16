@@ -54,12 +54,12 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          if git diff --quiet cfhb_results/posted_results.txt; then
-            echo "✅ No changes detected in cfhb_results/posted_results.txt"
+          if git diff --quiet cfhb_results/data/posted_results.txt; then
+            echo "✅ No changes detected in cfhb_results/data/posted_results.txt"
             echo "✅ No new tournaments to process. All results are up to date."
           else
-            echo "📝 Changes detected in cfhb_results/posted_results.txt"
-            git add cfhb_results/posted_results.txt
+            echo "📝 Changes detected in cfhb_results/data/posted_results.txt"
+            git add cfhb_results/data/posted_results.txt
             git commit -m "Update tournament results - $(date +'%Y-%m-%d %H:%M:%S UTC')"
             git push
             echo "✅ Changes committed and pushed successfully"

@@ -82,8 +82,8 @@ def load_json_config(filename: str) -> dict:
         return {}
 
 logger.info("📂 Loading configuration files...")
-NAME_DICT = load_json_config("name_mapping.json")
-PLAYER_CONFIG = load_json_config("player_ids.json")
+NAME_DICT = load_json_config("./data/name_mapping.json")
+PLAYER_CONFIG = load_json_config("./data/player_ids.json")
 logger.info(f"📋 Loaded {len(NAME_DICT)} name mappings")
 logger.info(f"👥 Loaded {len(PLAYER_CONFIG.get('players', []))} player configurations")
 
@@ -601,7 +601,7 @@ async def send_to_discord(message: str):
 
 def load_posted_results() -> Set[str]:
     """Load previously posted tournament slugs"""
-    filename = "posted_results.txt"
+    filename = "./data/posted_results.txt"
     try:
         with open(filename, "r", encoding="utf-8") as f:
             results = set(line.strip() for line in f.readlines() if line.strip())
@@ -614,7 +614,7 @@ def load_posted_results() -> Set[str]:
 
 def save_posted_result(event_slug: str):
     """Save a tournament slug to the posted results file"""
-    filename = "posted_results.txt"
+    filename = "./data/posted_results.txt"
     try:
         with open(filename, "a", encoding="utf-8") as f:
             f.write(event_slug + "\n")
