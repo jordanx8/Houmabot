@@ -2,8 +2,7 @@ name: CFHB Tournament Results
 
 on:
   schedule:
-    # Run every day at 8:00 AM CST (14:00 UTC, accounting for CST = UTC-6)
-    - cron: '0 13 * * *'
+    - cron: '0 * * * *'
   workflow_dispatch:  # Allows manual trigger from GitHub Actions tab
     inputs:
       tournament_slug:
