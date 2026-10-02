@@ -623,15 +623,18 @@ def save_posted_result(event_slug: str):
         logger.error(f"❌ Failed to save result to {filename}: {e}")
 
 
-def main(tournament_slug: Optional[str] = None):
+def main(tournament_slug: Optional[str] = None, dry_run: bool = False):
     """
     Main execution function
     
     Args:
         tournament_slug: Optional specific tournament slug to process (without "tournament/" prefix)
+        dry_run: If True, print the Discord message to stdout instead of sending it and skip saving to posted_results.txt
     """
     logger.info("=" * 80)
     logger.info("🚀 Starting CFHB Results Bot")
+    if dry_run:
+        logger.info("🔍 DRY RUN MODE - message will be printed, not sent to Discord")
     logger.info("=" * 80)
     
     # Validate configuration
@@ -642,17 +645,18 @@ def main(tournament_slug: Optional[str] = None):
     else:
         logger.info(f"✅ STARTGG_API_TOKEN configured (length: {len(STARTGG_API_TOKEN)})")
     
-    if not DISCORD_BOT_TOKEN:
-        logger.error("❌ DISCORD_BOT_TOKEN not set")
-        return
-    else:
-        logger.info(f"✅ DISCORD_BOT_TOKEN configured (length: {len(DISCORD_BOT_TOKEN)})")
-    
-    if DISCORD_CHANNEL_ID == 0:
-        logger.error("❌ DISCORD_CHANNEL_ID not set")
-        return
-    else:
-        logger.info(f"✅ DISCORD_CHANNEL_ID configured: {DISCORD_CHANNEL_ID}")
+    if not dry_run:
+        if not DISCORD_BOT_TOKEN:
+            logger.error("❌ DISCORD_BOT_TOKEN not set")
+            return
+        else:
+            logger.info(f"✅ DISCORD_BOT_TOKEN configured (length: {len(DISCORD_BOT_TOKEN)})")
+        
+        if DISCORD_CHANNEL_ID == 0:
+            logger.error("❌ DISCORD_CHANNEL_ID not set")
+            return
+        else:
+            logger.info(f"✅ DISCORD_CHANNEL_ID configured: {DISCORD_CHANNEL_ID}")
     
     # Initialize session
     logger.info("🔧 Initializing API session...")
@@ -731,14 +735,23 @@ def main(tournament_slug: Optional[str] = None):
                 logger.warning(f"⚠️  Message too long ({original_length} chars), truncating to 2000")
                 message = message[:1990] + "\n```(truncated)```"
             
-            # Send to Discord
-            logger.info("📤 Sending to Discord...")
-            asyncio.run(send_to_discord(message))
-            
-            # Mark as posted ONLY after successful Discord send
-            # Skip marking if it was already posted (manual re-run case)
-            if event_slug not in posted_results:
-                save_posted_result(event_slug)
+            if dry_run:
+                # Print message to stdout instead of sending to Discord
+                logger.info("📋 DRY RUN - Discord message output:")
+                print("\n" + "=" * 80)
+                print("DISCORD MESSAGE OUTPUT:")
+                print("=" * 80)
+                print(message)
+                print("=" * 80 + "\n")
+            else:
+                # Send to Discord
+                logger.info("📤 Sending to Discord...")
+                asyncio.run(send_to_discord(message))
+                
+                # Mark as posted ONLY after successful Discord send
+                # Skip marking if it was already posted (manual re-run case)
+                if event_slug not in posted_results:
+                    save_posted_result(event_slug)
             logger.info(f"✅ Successfully processed {event_slug}")
             success_count += 1
             
@@ -768,6 +781,12 @@ if __name__ == "__main__":
         help='Optional: Specific tournament slug to process (without "tournament/" prefix, e.g., "example-2024")',
         default=None
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the Discord message to stdout instead of sending it. Skips saving to posted_results.txt.",
+        default=False
+    )
     
     args = parser.parse_args()
-    main(tournament_slug=args.tournament_slug)
+    main(tournament_slug=args.tournament_slug, dry_run=args.dry_run)
